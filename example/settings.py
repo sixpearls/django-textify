@@ -106,7 +106,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware'
 )
 
 ROOT_URLCONF = 'example.urls'
@@ -132,8 +133,16 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django.contrib.sites',
+    'django.contrib.flatpages',
+
+
     'textify',
-    'simpleapp',
+    'taggit',
+    'categories',
+    'categories.editor',
+    'django_extensions',
+    #'simpleapp',
 )
 
 # A sample logging configuration. The only tangible logging

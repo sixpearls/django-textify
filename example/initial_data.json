@@ -1,0 +1,102 @@
+[
+    {
+        "pk": 1, 
+        "model": "textify.textifychunktag", 
+        "fields": {
+            "name": "ct1", 
+            "slug": "ct1"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "textify.textifychunktag", 
+        "fields": {
+            "name": "ct2", 
+            "slug": "ct2"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "textify.taggedtextifychunk", 
+        "fields": {
+            "content_object": 1, 
+            "tag": 1
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "textify.taggedtextifychunk", 
+        "fields": {
+            "content_object": 1, 
+            "tag": 2
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "textify.taggedtextifychunk", 
+        "fields": {
+            "content_object": 2, 
+            "tag": 2
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "textify.textifypage", 
+        "fields": {
+            "content_raw": "This is my page!\r\n\r\n{% get_chunk_by_tag \"ct2\" as chunks %}\r\n{% for chunk in chunks %}\r\n{{ chunk.slug }}\r\n{% endfor %}\r\n\r\n{% get_chunk_by_tag \"ct1\" as chunkz %}\r\n{% for chunk in chunkz %}\r\n{{ chunk.slug }}\r\n{% endfor %}\r\n\r\n{% get_chunk \"chunk2\" as chunk2 %}\r\n{{ chunk2.slug }}\r\n", 
+            "sites": [
+                1
+            ], 
+            "comment_status": 1
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "textify.textifychunk", 
+        "fields": {
+            "content": "yeah, this is me", 
+            "slug": "chunk1", 
+            "title": "chunk1",
+            "content_raw": "yeah, this is me", 
+            "sites": [
+                1
+            ]
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "textify.textifychunk", 
+        "fields": {
+            "content": "wat doggg", 
+            "slug": "chunk2", 
+            "title": "chunk2",
+            "content_raw": "wat doggg", 
+            "sites": [
+                1
+            ]
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "sites.site", 
+        "fields": {
+            "domain": "127.0.0.1:8000", 
+            "name": "local"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "flatpages.flatpage", 
+        "fields": {
+            "registration_required": false, 
+            "title": "My Page", 
+            "url": "/page/", 
+            "template_name": "", 
+            "sites": [
+                1
+            ], 
+            "content": "This is my page!\r\n\r\n\r\n\r\nchunk1\r\n\r\nchunk2\r\n\r\n\r\n\r\n\r\nchunk1\r\n\r\n\r\n\r\nchunk2\r\n", 
+            "enable_comments": false
+        }
+    }
+]
