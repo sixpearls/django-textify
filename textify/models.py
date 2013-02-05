@@ -62,13 +62,18 @@ class CommentStatusMixin(models.Model):
     class Meta:
         abstract = True
 
+from markdown import markdown
+
+def render_content(text):
+    t = template.Template(markdown(text,safe_mode=True))
+    c = template.Context({})
+    return t.render(c)
+
 class RenderedContentMixin(models.Model):
-    content_raw = models.TextField(_('HTML content'), blank=True)
+    content_raw = models.TextField(_('Raw input'), blank=True)
 
     def save(self, *args, **kwargs):
-        t = template.Template(self.content_raw)
-        c = template.Context({})
-        self.content = t.render(c)
+        self.content = render_content(self.content_raw)
         super(RenderedContentMixin,self).save(*args,**kwargs)
 
     class Meta:
