@@ -67,7 +67,7 @@ MEDIA_URL = '/uploads/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = os.path.abspath(os.path.join(PROJ_ROOT, 'media', 'static'))
+STATIC_ROOT = os.path.abspath(os.path.join(PROJ_ROOT, 'static'))
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -85,7 +85,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 
@@ -110,10 +110,10 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware'
 )
 
-ROOT_URLCONF = 'example.urls'
+ROOT_URLCONF = 'urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'example.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or
@@ -136,13 +136,14 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.flatpages',
 
-
     'textify',
     'taggit',
     'categories',
     'categories.editor',
+    'massmedia',
     'django_extensions',
-    #'simpleapp',
+    'markitup',
+
 )
 
 # A sample logging configuration. The only tangible logging
@@ -173,3 +174,7 @@ LOGGING = {
         },
     }
 }
+
+MARKITUP_FILTER = ('textify.models.render_content', {})
+MARKITUP_AUTO_PREVIEW = True
+MARKITUP_SET = 'textify/markitup/sets/markdown'

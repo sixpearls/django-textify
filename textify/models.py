@@ -10,6 +10,7 @@ from django import template
 import datetime
 
 from textify import settings
+from textify.utils import load_component
 
 class TextifyBase(models.Model):
     title = models.CharField(_('title'), max_length=255)
@@ -62,12 +63,13 @@ class CommentStatusMixin(models.Model):
     class Meta:
         abstract = True
 
-from markdown import markdown
-
 def render_content(text):
-    t = template.Template(markdown(text,safe_mode=True))
+    t = template.Template(text)
     c = template.Context({})
-    return t.render(c)
+    r = t.render(c)
+    for renderer, kwargs in settings.RENDERERS:
+        r = load_component(renderer)(r,**kwargs)
+    return r
 
 class RenderedContentMixin(models.Model):
     content_raw = models.TextField(_('Raw input'), blank=True)
