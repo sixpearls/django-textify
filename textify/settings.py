@@ -25,6 +25,8 @@ DEFAULT_POST_TYPES = (
 )
 
 DEFAULT_SETTINGS = {
+    'WIDGET': '',
+    'RENDERERS': [],
     'AUTHOR_MODEL': 'auth.User',
     'AUTHOR_MODEL_LIMIT': None,
     'PUBLISH_STATUS_CHOICES': DEFAULT_PUBLISH_STATUS_CHOICES,
@@ -35,6 +37,13 @@ DEFAULT_SETTINGS = {
     'POST_TYPES': DEFAULT_POST_TYPES,
     'DEFAULT_POST_TYPE': 1,
 }
+
+if 'mediacracy' in settings.INSTALLED_APPS:
+    USING_MEDIACRACY = True
+    DEFAULT_SETTINGS['WIDGET'] = 'mediacracy.widgets.TextifyMarkitupAdminWidget'
+else:
+    USING_MEDIACRACY = False
+
 
 USER_SETTINGS = DEFAULT_SETTINGS.copy()
 USER_SETTINGS.update(getattr(settings, 'TEXTIFY_SETTINGS', {}))

@@ -10,7 +10,6 @@ register = template.Library()
 CACHE_PREFIX = "textifychunk_"
 
 def do_chunk(parser, token):
-    # split_contents() knows not to split quoted strings.
     tokens = token.split_contents()
     if len(tokens) < 2 or len(tokens) > 3:
         raise template.TemplateSyntaxError, "%r tag should have either 2 or 3 arguments" % (tokens[0],)

@@ -3,16 +3,11 @@
 from django.contrib import admin
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+
+from textify import settings
 from textify.models import TextifyPage, TextifyPost, TextifyChunk
 from textify.forms import TextifyPageForm
-
-from markitup.widgets import AdminMarkItUpWidget
-
-class TextifyMarkitupAdminWidget(AdminMarkItUpWidget):
-    def _media(self):
-        return super(TextifyMarkitupAdminWidget,self).media + forms.Media(js=("textify/markitup/constant_preview_refresh.js",))
-    media = property(_media)
-
+from textify.utils import load_component
 
 class RenderedContentAdminMixin(admin.ModelAdmin):
     """ Eventually, this should do magical preview stuff """
@@ -20,7 +15,7 @@ class RenderedContentAdminMixin(admin.ModelAdmin):
 
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name == 'content_raw':
-            kwargs['widget'] = TextifyMarkitupAdminWidget()
+            kwargs['widget'] = load_component(settings.WIDGET) or forms.Textarea
         return super(RenderedContentAdminMixin, self).formfield_for_dbfield(db_field, **kwargs)
 
 class TextifyPageAdmin(RenderedContentAdminMixin):
