@@ -64,15 +64,11 @@ class CommentStatusMixin(models.Model):
         abstract = True
 
 def render_content(text):
-    text = text
-    for renderer, kwargs in settings.RENDERERS:
-        text = load_component(renderer)(text,**kwargs)
-
     t = template.Template(text)
-    # t = template.Template(r)
     c = template.Context({})
     r = t.render(c)
-
+    for renderer, kwargs in settings.RENDERERS:
+        r = load_component(renderer)(r,**kwargs)
     return r
 
 class RenderedContentMixin(models.Model):
