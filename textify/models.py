@@ -3,11 +3,12 @@
 from django.db import models
 from django.conf import settings as site_settings
 from django.utils.translation import ugettext_lazy as _
+from django.utils.safestring import mark_safe
 
 from django.contrib.sites.models import Site
 from django.contrib.flatpages.models import FlatPage
 from django import template
-import datetime
+from datetime import datetime
 
 from textify import settings
 from textify.utils import load_component
@@ -28,9 +29,9 @@ class PublishedItemsManager(models.Manager):
     """Returns published posts that are not in the future."""
     def published(self):
         return self.get_query_set().filter(
-            *settings.PUBLISH_STATUS_TEST).filter(
+            settings.PUBLISH_STATUS_TEST).filter(
             published__isnull=False).filter(
-            published__lte=datetime.datetime.now()).order_by('-published')
+            published__lte=datetime.now()).order_by('-published')
 
 class PublishedItemMixin(models.Model):
     description = models.TextField(_('description'),blank=True)
@@ -44,7 +45,7 @@ class PublishedItemMixin(models.Model):
     created = models.DateTimeField(_('created'),auto_now_add=True)
     modified = models.DateTimeField(_('modified'),auto_now=True)
 
-    published = models.DateTimeField(_('published'), default=datetime.datetime.now, blank=True, null=True)
+    published = models.DateTimeField(_('published'), default=datetime.now, blank=True, null=True)
     publish_status = models.IntegerField(_('Publish status'),
         choices=settings.PUBLISH_STATUS_CHOICES,
         default=settings.DEFAULT_PUBLISH_STATUS)
@@ -66,6 +67,8 @@ class CommentStatusMixin(models.Model):
 def render_content(text):
     for renderer, kwargs in settings.RENDERERS:
         text = load_component(renderer)(text,**kwargs)
+    for library in settings.INCLUDE_TAG_LIBRARIES:
+        text = "{%% load %s %%}" % library + text
     t = template.Template(text)
     c = template.Context({})
     return t.render(c)
@@ -76,6 +79,10 @@ class RenderedContentMixin(models.Model):
     def save(self, *args, **kwargs):
         self.content = render_content(self.content_raw)
         super(RenderedContentMixin,self).save(*args,**kwargs)
+
+    @property
+    def safe_content(self):
+        return mark_safe(self.content)
 
     class Meta:
         abstract = True
@@ -116,17 +123,30 @@ class TextifyPost(TextifyBase,RenderedContentMixin,PublishedItemMixin,CommentSta
         choices=settings.POST_TYPES,
         default=settings.DEFAULT_POST_TYPE)
     if 'categories' in site_settings.INSTALLED_APPS:
-        category = models.ForeignKey('categories.Category')
+        category = models.ForeignKey('categories.Category',blank=True,null=True)
     if 'taggit' in site_settings.INSTALLED_APPS:
-        tags = TaggableManager(through=TaggedTextifyPost)
+        tags = TaggableManager(through=TaggedTextifyPost,blank=True)
+    if 'massmedia' in site_settings.INSTALLED_APPS:
+        featured_image = models.ForeignKey('massmedia.Image',blank=True,null=True)
+    else:
+        featured_image = models.ImageField()
 
     class Meta:
         verbose_name = _(u'Textify Post')
         verbose_name_plural = _(u'Textify Posts')
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('post_detail', (), {
+            'post_type': self.get_post_type_display(),
+            'year': self.published.year,
+            'month': self.published.strftime('%b').lower(),
+            'slug': self.slug
+        })
+
 class TextifyChunk(TextifyBase,RenderedContentMixin):
     if 'taggit' in site_settings.INSTALLED_APPS:
-        tags = TaggableManager(through=TaggedTextifyChunk)
+        tags = TaggableManager(through=TaggedTextifyChunk,blank=True)
 
     class Meta:
         verbose_name = _(u'Textify Chunk')

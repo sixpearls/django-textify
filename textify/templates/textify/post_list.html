@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h1>Post Archive {{ day|date:"F d Y" }}</h1>
+  <ul>
+    {% for post in posts %}
+      <li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}

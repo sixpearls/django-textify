@@ -6,8 +6,8 @@ from django.utils.translation import ugettext_lazy as _
 
 DEFAULT_PUBLISH_STATUS_CHOICES = (
     (1, _(u'DRAFT')),
-    (2, _(u'PRIVATE')),
-    (3, _(u'PUBLISHED')),
+    (2, _(u'HIDDEN')),
+    (3, _(u'LIVE')),
 )
 
 DEFAULT_PUBLISH_STATUS_TEST = Q(publish_status__gt=2)
@@ -27,6 +27,7 @@ DEFAULT_POST_TYPES = (
 DEFAULT_SETTINGS = {
     'WIDGET': '',
     'RENDERERS': [],
+    'INCLUDE_TAG_LIBRARIES': [],
     'AUTHOR_MODEL': 'auth.User',
     'AUTHOR_MODEL_LIMIT': None,
     'PUBLISH_STATUS_CHOICES': DEFAULT_PUBLISH_STATUS_CHOICES,
