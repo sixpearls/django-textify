@@ -1,4 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
+<header>
+<h2 class="blog-title">{{object.title}}</h2>
+<cite class="date">{{ object.published|date:"Y F d" }}</cite>
+{{ object.body_html|safe }}
+</header>
 {{ post.safe_content }}
+
 {% endblock %}

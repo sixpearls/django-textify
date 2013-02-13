@@ -53,7 +53,7 @@ class PublishedItemMixin(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['published']
+        ordering = ['-published']
 
 class CommentStatusMixin(models.Model):
     comment_status = models.IntegerField(_('Comment Status'),
@@ -131,7 +131,7 @@ class TextifyPost(TextifyBase,RenderedContentMixin,PublishedItemMixin,CommentSta
     else:
         featured_image = models.ImageField()
 
-    class Meta:
+    class Meta(PublishedItemMixin.Meta):
         verbose_name = _(u'Textify Post')
         verbose_name_plural = _(u'Textify Posts')
 

@@ -1,9 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h1>Post Archive {{ day|date:"F d Y" }}</h1>
-  <ul>
-    {% for post in posts %}
-      <li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></li>
-    {% endfor %}
-  </ul>
+<ul id="post-list">
+{% for post in posts %}
+    <li>
+        <a href="{{ post.get_absolute_url }}" title="View full post of {{ post.title }}">
+            <header>
+                {% if post.featuredimage %}
+                <img src="{% if post.featuredimage.thumbnailimagefile.url %}{{post.featuredimage.thumbnailimagefile.url}}{% else %}{{post.featuredimage.fullsizedimagefile.url}}{% endif %}" class="featured-image">
+                {% endif %}
+                <h3 class="blog-title">{{ post.title|safe }}</h3>
+                <cite class="date">{{ post.published|date:"Y F d" }}</cite>
+            </header>
+            <p class="tease">{% if post.description %}{{ post.description|safe|truncatewords_html:"100" }}{% else %} {{ post.content|safe|truncatewords_html:"100"|striptags }} {% endif %}</p>
+        </a>
+    </li>
+{% endfor %}
+</ul>
 {% endblock %}
