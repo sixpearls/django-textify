@@ -1,5 +1,21 @@
 {% extends 'base.html' %}
+
+{% block title %}{{ block.super }} | Blog {% endblock %}
+
 {% block content %}
+{% if is_paginated %}
+<header>
+<nav class="next_prev_nav">
+{% if page_obj.has_next %}
+<a href="?page={{page_obj.next_page_number}}" class="next">&larr; Older </a>
+{% endif %}
+{% if page_obj.has_previous %}
+<a href="?page={{page_obj.previous_page_number}}" class="previous">Newer &rarr;</a>
+{% endif %}
+</nav>
+</header>
+{% endif %}
+
 <ul id="post-list">
 {% for post in posts %}
     <li>
@@ -16,4 +32,18 @@
     </li>
 {% endfor %}
 </ul>
+
+{% if is_paginated %}
+<footer>
+<nav class="next_prev_nav">
+{% if page_obj.has_next %}
+<a href="?page={{page_obj.next_page_number}}" class="next">&larr; Older </a>
+{% endif %}
+{% if page_obj.has_previous %}
+<a href="?page={{page_obj.previous_page_number}}" class="previous">Newer &rarr;</a>
+{% endif %}
+</nav>
+</footer>
+{% endif %}
+
 {% endblock %}

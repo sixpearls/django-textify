@@ -47,14 +47,19 @@ date_based_patterns = patterns('',
     ),
     # post detail
     url(
-        regex  = r'^(?P<year>\d{4})/(?P<month>\w{3})/(?P<slug>[-\w]+)/$',
+        regex  = r'^(?P<year>\d{4})/(?P<month>\w{3})/(?P<slug>[-_\w]+)/$',
         view   =  PostDetail.as_view(),
         name   = 'post_detail',
     ),
     url(
-        regex  = r'^(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<slug>[-\w]+)/$',
+        regex  = r'^(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<slug>[-_\w]+)/$',
         view   =  PostDetail.as_view(),
         name   = 'post_detail_month_number',
+    ),
+    url(
+        regex  = r'^(?P<year>\d{4})/(?P<slug>[-_\w]+)/$',
+        view   =  PostDetail.as_view(),
+        name   = 'post_detail_year_only',
     ),
 
 )
@@ -65,10 +70,20 @@ urlpatterns = patterns('',
 
 if 'categories' in settings.settings.INSTALLED_APPS:
     urlpatterns += patterns('',
-        ('^category/(?P<path>.+)/$',PostCategorybasedList.as_view()),
+        url(
+            regex = r'^category/(?P<path>.+)/$',
+            view = PostCategorybasedList.as_view(),
+            name = "post_by_category"),
     )
 
 if 'taggit' in settings.settings.INSTALLED_APPS:
     urlpatterns += patterns('',
-        ('^tag/(?P<tag>\w+)/$',PostTagbasedList.as_view()),
+        url( 
+            regex = r'^tag/(?P<tag>[-_\w]+)/$',
+            view = PostTagbasedList.as_view(),
+            name = "post_by_tag"),
+        url(
+            regex = r'^tag/(?P<tag>[-_\w]+)/(?P<slug>[-_\w]+)/$',
+            view = PostDetail.as_view(),
+            name = "post_detail_tag"),
     )

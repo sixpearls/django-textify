@@ -1,10 +1,37 @@
 {% extends 'base.html' %}
+
+{% block title %}{{ block.super }} | {{object.title}}{% endblock %}
+
 {% block content %}
 <header>
+
+{% if next_post or previous_post %}
+<nav class="next_prev_nav">
+{% if next_post %}
+<a href="{{next_post.get_absolute_url}}" class="next">&larr; Older </a>
+{% endif %}
+{% if previous_post %}
+<a href="{{previous_post.get_absolute_url}}" class="previous">Newer &rarr;</a>
+{% endif %}
+</nav>
+{% endif %}
+
 <h2 class="blog-title">{{object.title}}</h2>
 <cite class="date">{{ object.published|date:"Y F d" }}</cite>
 {{ object.body_html|safe }}
 </header>
 {{ post.safe_content }}
+
+
+{% if next_post or previous_post %}
+<nav class="next_prev_nav">
+{% if next_post %}
+<a href="{{next_post.get_absolute_url}}" class="next">&larr; Older </a>
+{% endif %}
+{% if previous_post %}
+<a href="{{previous_post.get_absolute_url}}" class="previous">Newer &rarr;</a>
+{% endif %}
+</nav>
+{% endif %}
 
 {% endblock %}
