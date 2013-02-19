@@ -123,11 +123,11 @@ class TextifyPost(TextifyBase,RenderedContentMixin,PublishedItemMixin,CommentSta
         choices=settings.POST_TYPES,
         default=settings.DEFAULT_POST_TYPE)
     if 'categories' in site_settings.INSTALLED_APPS:
-        category = models.ForeignKey('categories.Category',blank=True,null=True)
+        category = models.ForeignKey('categories.Category',blank=True,null=True,on_delete=models.SET_NULL)
     if 'taggit' in site_settings.INSTALLED_APPS:
         tags = TaggableManager(through=TaggedTextifyPost,blank=True)
     if 'massmedia' in site_settings.INSTALLED_APPS:
-        featured_image = models.ForeignKey('massmedia.Image',blank=True,null=True)
+        featured_image = models.ForeignKey('massmedia.Image',blank=True,null=True,on_delete=models.SET_NULL)
     else:
         featured_image = models.ImageField()
 
