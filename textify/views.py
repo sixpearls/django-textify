@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404, QueryDict
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, DetailView
 from django.views.decorators.cache import never_cache, cache_page
 from django.views.decorators.http import require_http_methods
+from django.utils.safestring import mark_safe
 
 from .models import TextifyPost
 from .utils import post_type_dict
 from . import settings
 from datetime import datetime
+from urlparse import urlparse
 
 class DateBasedMixin(object):
     def get_queryset(self):
@@ -56,9 +58,8 @@ if 'categories' in settings.settings.INSTALLED_APPS:
             try:
                 self.path
             except:
-                try:
-                    path = self.kwargs['path']
-                except:
+                path = self.kwargs.get('path',None)
+                if path is None:
                     raise Http404
                 self.path = path.strip('/').split('/')
             if len(self.path) >= 2:
@@ -80,6 +81,14 @@ if 'categories' in settings.settings.INSTALLED_APPS:
                 self.category = self.get_category_for_path()
             return TextifyPost.objects.filter(category=self.category)
 
+        def get_context_data(self, **kwargs):
+            context = super(CategoryBasedMixin, self).get_context_data(**kwargs)
+            query = QueryDict(urlparse(context.get('post_url_querystring','')).query).copy()
+            query['category'] = self.kwargs.get('path',None)
+            if query['category'] is not None:
+                context['post_url_querystring'] = mark_safe('?' + query.urlencode())
+            return context
+
     class PostCategorybasedList(PostListMixin,CategoryBasedMixin,ListView):
         def dispatch(self, request, *args, **kwargs):
             # check if there is some video onsite
@@ -97,18 +106,25 @@ if 'categories' in settings.settings.INSTALLED_APPS:
 if 'taggit' in settings.settings.INSTALLED_APPS:
     class TagBasedMixin(object):
         def get_queryset(self):
-            try:
-                tag = self.kwargs['tag']
-            except:
+            tag = self.kwargs.get('tag',None)
+            if tag is None:
                 raise Http404
             return TextifyPost.objects.filter(tags__name__in=[tag,])
+
+        def get_context_data(self, **kwargs):
+            context = super(TagBasedMixin, self).get_context_data(**kwargs)
+            query = QueryDict(urlparse(context.get('post_url_querystring','')).query).copy()
+            query['tag'] = self.kwargs.get('tag',None)
+            if query['tag'] is not None:
+                context['post_url_querystring'] = mark_safe('?' + query.urlencode())
+            return context
 
     class PostTagbasedList(PostListMixin,TagBasedMixin,ListView):
         def get_template_names(self):
             return ["textify/post_list_tag_based.html", super(PostTagbasedList,self).template_name]
     
 
-class PostDetail(DetailView,DateBasedMixin,TagBasedMixin,CategoryBasedMixin):
+class PostDetail(DateBasedMixin,TagBasedMixin,CategoryBasedMixin,DetailView):
     context_object_name = "post"
     template_name = "textify/post_detail.html"
 
@@ -121,17 +137,34 @@ class PostDetail(DetailView,DateBasedMixin,TagBasedMixin,CategoryBasedMixin):
         except:
             date_qs = TextifyPost.objects.none()
 
+        tag = self.request.GET.get('tag',None)
+        category = self.request.GET.get('category',None)
+        
+        new_kwargs = {'tag': tag, 'path': category}
+        new_kwargs.update(self.kwargs)
+        self.kwargs = new_kwargs
+
+        use_and = False
+
         try:
             tag_qs = TagBasedMixin.get_queryset(self)
+            use_and = True
         except:
             tag_qs = TextifyPost.objects.none()
 
         try:
             category_qs = CategoryBasedMixin.get_queryset(self)
+            use_and = True
         except:
             category_qs = TextifyPost.objects.none()
+
+
+        if use_and:
+            self.queryset = date_qs & ( tag_qs | category_qs )
+        else:
+            self.queryset = date_qs | tag_qs | category_qs
         
-        self.queryset = date_qs | tag_qs | category_qs
+        self.queryset = self.queryset.distinct()
         return self.queryset
 
     def get_object(self,queryset=None):

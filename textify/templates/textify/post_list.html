@@ -19,10 +19,10 @@
 <ul id="post-list">
 {% for post in posts %}
     <li>
-        <a href="{{ post.get_absolute_url }}" title="View full post of {{ post.title }}">
+        <a href="{{ post.get_absolute_url }}{{ post_url_querystring }}" title="View full post of {{ post.title }}">
             <header>
-                {% if post.featuredimage %}
-                <img src="{% if post.featuredimage.thumbnailimagefile.url %}{{post.featuredimage.thumbnailimagefile.url}}{% else %}{{post.featuredimage.fullsizedimagefile.url}}{% endif %}" class="featured-image">
+                {% if post.featured_image %}
+                <img src="{% if post.featured_image.thumbnail.url %}{{post.featured_image.thumbnail.url}}{% else %}{{post.featured_image.file.url}}{% endif %}" class="featured-image">
                 {% endif %}
                 <h3 class="blog-title">{{ post.title|safe }}</h3>
                 <cite class="date">{{ post.published|date:"Y F d" }}</cite>

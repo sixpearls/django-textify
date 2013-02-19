@@ -8,10 +8,10 @@
 {% if next_post or previous_post %}
 <nav class="next_prev_nav">
 {% if next_post %}
-<a href="{{next_post.get_absolute_url}}" class="next">&larr; Older </a>
+<a href="{{next_post.get_absolute_url}}{{ post_url_querystring }}" class="next">&larr; Older </a>
 {% endif %}
 {% if previous_post %}
-<a href="{{previous_post.get_absolute_url}}" class="previous">Newer &rarr;</a>
+<a href="{{previous_post.get_absolute_url}}{{ post_url_querystring }}" class="previous">Newer &rarr;</a>
 {% endif %}
 </nav>
 {% endif %}
@@ -26,10 +26,10 @@
 {% if next_post or previous_post %}
 <nav class="next_prev_nav">
 {% if next_post %}
-<a href="{{next_post.get_absolute_url}}" class="next">&larr; Older </a>
+<a href="{{next_post.get_absolute_url}}{{ post_url_querystring }}" class="next">&larr; Older </a>
 {% endif %}
 {% if previous_post %}
-<a href="{{previous_post.get_absolute_url}}" class="previous">Newer &rarr;</a>
+<a href="{{previous_post.get_absolute_url}}{{ post_url_querystring }}" class="previous">Newer &rarr;</a>
 {% endif %}
 </nav>
 {% endif %}
