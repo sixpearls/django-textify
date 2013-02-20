@@ -65,13 +65,17 @@ class CommentStatusMixin(models.Model):
         abstract = True
 
 def render_content(text):
-    for renderer, kwargs in settings.RENDERERS:
-        text = load_component(renderer)(text,**kwargs)
     for library in settings.INCLUDE_TAG_LIBRARIES:
         text = "{%% load %s %%}" % library + text
+
     t = template.Template(text)
     c = template.Context({})
-    return t.render(c)
+    text = t.render(c)
+
+    for renderer, kwargs in settings.RENDERERS:
+        text = load_component(renderer)(text,**kwargs)
+
+    return text
 
 class RenderedContentMixin(models.Model):
     content_raw = models.TextField(_('Raw input'), blank=True)
