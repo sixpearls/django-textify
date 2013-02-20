@@ -15,7 +15,16 @@ from . import settings
 from datetime import datetime
 from urlparse import urlparse
 
-class DateBasedMixin(object):
+class PostTypeMixin(object):
+    def get_queryset(self):
+        post_type = self.kwargs.get('post_type',settings.POST_TYPES[0][1].__unicode__())
+        try:
+            queryset = TextifyPost.objects.published().filter(post_type=post_type_dict[post_type])
+        except:
+            raise Http404
+        return queryset
+
+class DateBasedMixin(PostTypeMixin):
     def get_queryset(self):
         year = self.kwargs.get('year','')
         month = self.kwargs.get('month','')
@@ -27,11 +36,8 @@ class DateBasedMixin(object):
             except:
                 month = ''
         day = self.kwargs.get('day','')
-        post_type = self.kwargs.get('post_type',settings.POST_TYPES[0][1].__unicode__())
-        try:
-            queryset = TextifyPost.objects.published().filter(post_type=post_type_dict[post_type])
-        except:
-            raise Http404
+
+        queryset = super(DateBasedMixin,self).get_queryset()
 
         if year != '':
             queryset = queryset.filter(published__year=year)
@@ -124,19 +130,11 @@ if 'taggit' in settings.settings.INSTALLED_APPS:
             return ["textify/post_list_tag_based.html", super(PostTagbasedList,self).template_name]
     
 
-class PostDetail(DateBasedMixin,TagBasedMixin,CategoryBasedMixin,DetailView):
+class PostDetail(PostTypeMixin,TagBasedMixin,CategoryBasedMixin,DetailView):
     context_object_name = "post"
     template_name = "textify/post_detail.html"
 
     def get_queryset(self):
-        try:
-            if self.kwargs.get('post_type','') != '':
-                date_qs = DateBasedMixin.get_queryset(self)
-            else:
-                raise Exception
-        except:
-            date_qs = TextifyPost.objects.none()
-
         tag = self.request.GET.get('tag',None)
         category = self.request.GET.get('category',None)
         
@@ -144,27 +142,23 @@ class PostDetail(DateBasedMixin,TagBasedMixin,CategoryBasedMixin,DetailView):
         new_kwargs.update(self.kwargs)
         self.kwargs = new_kwargs
 
-        use_and = False
+        if self.kwargs.get('tag',None) or self.kwargs.get('path',None):
+            try:
+                tag_qs = TagBasedMixin.get_queryset(self)
+            except:
+                tag_qs = TextifyPost.objects.none()
 
-        try:
-            tag_qs = TagBasedMixin.get_queryset(self)
-            use_and = True
-        except:
-            tag_qs = TextifyPost.objects.none()
+            try:
+                category_qs = CategoryBasedMixin.get_queryset(self)
+            except:
+                category_qs = TextifyPost.objects.none()
 
-        try:
-            category_qs = CategoryBasedMixin.get_queryset(self)
-            use_and = True
-        except:
-            category_qs = TextifyPost.objects.none()
-
-
-        if use_and:
-            self.queryset = date_qs & ( tag_qs | category_qs )
+            self.queryset = tag_qs | category_qs
+            self.queryset = self.queryset.distinct()
+            
         else:
-            self.queryset = date_qs | tag_qs | category_qs
+            self.queryset = PostTypeMixin.get_queryset(self)
         
-        self.queryset = self.queryset.distinct()
         return self.queryset
 
     def get_object(self,queryset=None):
