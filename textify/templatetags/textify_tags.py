@@ -4,6 +4,7 @@ from django import template
 from textify.models import TextifyChunk
 from django.core.cache import cache
 from django.conf import settings
+from random import shuffle
 
 register = template.Library()
 
@@ -88,7 +89,7 @@ if 'taggit' in settings.INSTALLED_APPS:
         else:
             cache_time = 0
         tag = ensure_quoted_string(tag, "Tag argument to %r must be in quotes" % tagname)
-        return GetChunkByTagNode(tag, varname, cache_time)
+        return GetChunkByTagNode(tag, varname, limit, cache_time)
 
     class GetChunkByTagNode(template.Node):
         def __init__(self,tag,varname,limit=None,cache_time=0):
@@ -98,11 +99,15 @@ if 'taggit' in settings.INSTALLED_APPS:
             self.cache_time = cache_time
 
         def render(self, context):
-            cache_key = CACHE_PREFIX + TAG_MIDFIX + self.tag
+            cache_key = CACHE_PREFIX + TAG_MIDFIX + self.tag + '_' + unicode(self.limit)
             chunks = cache.get(cache_key)
             if chunks is None:
                 chunks = TextifyChunk.objects.filter(tags__name__in=[self.tag])[:self.limit]
                 cache.set(cache_key, chunks, int(self.cache_time))
+
+            chunks = list(chunks)
+            shuffle(chunks)
+
             context[self.varname] = chunks
             return ''
 

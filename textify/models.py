@@ -117,10 +117,25 @@ if 'taggit' in site_settings.INSTALLED_APPS:
 
         tags_for = classmethod(TaggedItemBase.tags_for.im_func)
 
-class TextifyPage(FlatPage,RenderedContentMixin,CommentStatusMixin):
+class TextifyPageBase(FlatPage,RenderedContentMixin,CommentStatusMixin):
     class Meta:
+        abstract = True
         verbose_name = _(u'Textify Page')
         verbose_name_plural = _(u'Textify Pages')
+
+if 'mptt' in site_settings.INSTALLED_APPS:
+    from mptt.models import MPTTModel, TreeForeignKey
+    class TextifyPage(MPTTModel,TextifyPageBase):
+        parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
+
+        class Meta:
+            verbose_name = _(u'Textify Page')
+            verbose_name_plural = _(u'Textify Pages')
+else:
+    class TextifyPage(TextifyPageBase):
+        class Meta:
+            verbose_name = _(u'Textify Page')
+            verbose_name_plural = _(u'Textify Pages')
 
 class TextifyPost(TextifyBase,RenderedContentMixin,PublishedItemMixin,CommentStatusMixin):
     post_type = models.IntegerField(_('Post Type'),
