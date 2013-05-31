@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 from django import forms
+from django.conf import settings as site_settings
 from django.utils.translation import ugettext_lazy as _
 
 from textify import settings
@@ -20,13 +21,38 @@ class RenderedContentAdminMixin(admin.ModelAdmin):
 
 class TextifyPageAdmin(RenderedContentAdminMixin):
     form = TextifyPageForm
-    fieldsets = (
-        (None, {'fields': ('url', 'title', 'content_raw', 'sites', 'comment_status')}),
-        (_('Advanced options'), {'classes': ('collapse',), 'fields': ('registration_required', 'template_name')}),
-    )
+    if 'mptt' in site_settings.INSTALLED_APPS:
+        fieldsets = (
+            (None, {'classes': ('hidden',), 'fields': ('parent__url',)}),
+            (None, {'fields': ('title', 'parent', 'url', 'content_raw', 'sites', 'comment_status')}),
+            (_('Advanced options'), {'classes': ('collapse',), 'fields': ('registration_required', 'template_name')}),
+        )
+
+        fk_prepopulated_fields = {'url': ['parent__url', 'title',]}
+
+        def get_prepopulated_fields(self, request, obj=None):
+            """
+            Hook for specifying custom prepopulated fields.
+            """
+            return dict(self.prepopulated_fields.items() + self.fk_prepopulated_fields.items())
+
+        class Media:
+            js = ("textify/urlprepopulate.js","admin/js/urlify.js","admin/js/prepopulate.js")
+            css = { "all": ("textify/admin.css",) }
+    else:
+        fieldsets = (
+            (None, {'fields': ('url', 'title', 'content_raw', 'sites', 'comment_status')}),
+            (_('Advanced options'), {'classes': ('collapse',), 'fields': ('registration_required', 'template_name')}),
+        )
     list_display = ('url', 'title')
     list_filter = ('sites', 'comment_status', 'registration_required')
     search_fields = ('url', 'title')
+
+    # if 'mptt' in site_settings.INSTALLED_APPS:
+    #     def formfield_for_dbfield(self, db_field, **kwargs):
+    #         if db_field.name == 'url':
+    #             kwargs['widget'] = urlfield
+    #         return super(RenderedContentAdminMixin, self).formfield_for_dbfield(db_field, **kwargs)
 
 class TextifyPostAdmin(RenderedContentAdminMixin):
     #form = TextifyPostForm

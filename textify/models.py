@@ -2,22 +2,37 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 from django.conf import settings as site_settings
+from django.db.models.signals import class_prepared
 from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
 
 from django.contrib.sites.models import Site
-from django.contrib.flatpages.models import FlatPage
 from django import template
 from datetime import datetime
 
 from textify import settings
 from textify.utils import load_component
 
+
+def update_sites_default(sender, **kwargs):
+    """
+    class_prepared signal handler that checks for the model flatpages.FlatPage
+    and adds a default for the 'sites' field
+    """
+    if sender.__name__ == "FlatPage" and sender._meta.app_label == 'flatpages':
+        sender._meta.get_field_by_name('sites')[0].default = [site_settings.SITE_ID]
+
+class_prepared.connect(update_sites_default)
+
+from django.contrib.flatpages.models import FlatPage
+if FlatPage._meta.get_field_by_name('sites')[0].default != [site_settings.SITE_ID]:
+    update_sites_default(FlatPage)
+
 class TextifyBase(models.Model):
     title = models.CharField(_('title'), max_length=255)
     slug = models.SlugField(_('slug'), max_length=255)
     content = models.TextField(_('content'), blank=True)
-    sites = models.ManyToManyField(Site)
+    sites = models.ManyToManyField(Site, default=[site_settings.SITE_ID])
 
     class Meta:
         abstract = True
@@ -64,12 +79,16 @@ class CommentStatusMixin(models.Model):
     class Meta:
         abstract = True
 
-def render_content(text):
+def render_content(text,self=None):
     for library in settings.INCLUDE_TAG_LIBRARIES:
         text = "{%% load %s %%}" % library + text
 
     t = template.Template(text)
-    c = template.Context({})
+    if self is None or not self.pk:
+        c = template.Context({'self': None })
+    else:
+        c = template.Context({'self': self })
+
     text = t.render(c)
 
     for renderer, kwargs in settings.RENDERERS:
@@ -81,7 +100,7 @@ class RenderedContentMixin(models.Model):
     content_raw = models.TextField(_('Raw input'), blank=True)
 
     def save(self, *args, **kwargs):
-        self.content = render_content(self.content_raw)
+        self.content = render_content(text=self.content_raw,self=self)
         super(RenderedContentMixin,self).save(*args,**kwargs)
 
     @property
@@ -118,6 +137,7 @@ if 'taggit' in site_settings.INSTALLED_APPS:
         tags_for = classmethod(TaggedItemBase.tags_for.im_func)
 
 class TextifyPageBase(FlatPage,RenderedContentMixin,CommentStatusMixin):
+
     class Meta:
         abstract = True
         verbose_name = _(u'Textify Page')
@@ -131,6 +151,9 @@ if 'mptt' in site_settings.INSTALLED_APPS:
         class Meta:
             verbose_name = _(u'Textify Page')
             verbose_name_plural = _(u'Textify Pages')
+
+        def get_siblings_include_self(self):
+            return self.get_siblings(include_self=True)
 else:
     class TextifyPage(TextifyPageBase):
         class Meta:

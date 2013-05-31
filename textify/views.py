@@ -11,6 +11,7 @@ from django.utils.safestring import mark_safe
 
 from .models import TextifyPost
 from .utils import post_type_dict
+from django.conf import settings as site_settings
 from . import settings
 from datetime import datetime
 from urlparse import urlparse
@@ -56,7 +57,7 @@ class PostDatebasedList(DateBasedMixin,PostListMixin,ListView):
     def get_template_names(self):
         return ["textify/post_list_date_based.html", super(PostDatebasedList,self).template_name]
 
-if 'categories' in settings.settings.INSTALLED_APPS:
+if 'categories' in site_settings.INSTALLED_APPS:
     category_model = TextifyPost._meta.get_field('category').rel.to
 
     class CategoryBasedMixin(object):
@@ -108,8 +109,11 @@ if 'categories' in settings.settings.INSTALLED_APPS:
 
         def get_template_names(self):
             return ["textify/post_list_category_based.html", super(PostCategorybasedList,self).template_name]
+else:
+    class CategoryBasedMixin(object):
+        pass
 
-if 'taggit' in settings.settings.INSTALLED_APPS:
+if 'taggit' in site_settings.INSTALLED_APPS:
     class TagBasedMixin(object):
         def get_queryset(self):
             tag = self.kwargs.get('tag',None)
@@ -128,6 +132,9 @@ if 'taggit' in settings.settings.INSTALLED_APPS:
     class PostTagbasedList(PostListMixin,TagBasedMixin,ListView):
         def get_template_names(self):
             return ["textify/post_list_tag_based.html", super(PostTagbasedList,self).template_name]
+else:
+    class TagBasedMixin(object):
+        pass
     
 
 class PostDetail(PostTypeMixin,TagBasedMixin,CategoryBasedMixin,DetailView):

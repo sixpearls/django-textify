@@ -1,0 +1,43 @@
+{% load l10n %}
+<script type="text/javascript">
+(function($) {
+    var field; /* test */
+
+{% for field in prepopulated_fields %}
+    //is_fk {{ field.field.follows_fk }}
+    field = {
+        id: '#{{ field.field.auto_id }}',
+        dependency_ids: [],
+        dependency_list: [],
+        maxLength: {{ field.field.field.max_length|default_if_none:"50"|unlocalize }}
+    };
+
+    {% for dependency in field.dependencies %}
+    
+    field['dependency_ids'].push('#{{ dependency.auto_id }}');
+    field['dependency_list'].push('{{ dependency.name }}');
+    {% if dependency.original_field.auto_id %} 
+    {% comment %}
+    If the dependcy has an original_field, it is an FK followed prepopulated field. Add the appropriate JS.
+    ***TODO: need to figure out how to handle prepopulate vs urlprepopulate vs something that can be more generic.
+    For now, just check "follows_fk" flag.
+    {% endcomment %}
+    
+    $("#{{ dependency.original_field.auto_id }}").change(function() {
+        var val = $(this).val();
+        $('#{{ dependency.auto_id }}').children("option").filter(function() { return $(this).text() == val; }).attr('selected',true);
+        $('#{{ dependency.auto_id }}').change();
+    });
+
+    {% endif %}
+    {% endfor %}
+
+    {% comment %}
+    Mark prepopulated fields in the main form and stacked inlines (.empty-form .form-row) and in tabular inlines (.empty-form.form-row)
+    {% endcomment %}
+    $('.empty-form .form-row .field-{{ field.field.name }}, .empty-form.form-row .field-{{ field.field.name }}').addClass('prepopulated_field');
+    $(field.id).data('dependency_list', field['dependency_list'])
+               .{% if field.field.follows_fk %}url_{% endif %}prepopulate(field['dependency_ids'], field.maxLength);
+{% endfor %}
+})(django.jQuery);
+</script>

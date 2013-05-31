@@ -3,9 +3,9 @@
 from django.conf.urls.defaults import patterns, url, include
 from django.views.generic import date_based
 
-from .views import PostDetail, PostDatebasedList, PostTagbasedList,PostCategorybasedList
+from .views import PostDetail, PostDatebasedList
 from .models import TextifyPost
-from . import settings
+from django.conf import settings
 
 
 date_based_patterns = patterns('',
@@ -68,7 +68,8 @@ urlpatterns = patterns('',
     ('^(?P<post_type>\w+)/',include(date_based_patterns)),
 )
 
-if 'categories' in settings.settings.INSTALLED_APPS:
+if 'categories' in settings.INSTALLED_APPS:
+    from .views import PostCategorybasedList
     urlpatterns += patterns('',
         url(
             regex = r'^category/(?P<path>.+)/$',
@@ -76,7 +77,8 @@ if 'categories' in settings.settings.INSTALLED_APPS:
             name = "post_by_category"),
     )
 
-if 'taggit' in settings.settings.INSTALLED_APPS:
+if 'taggit' in settings.INSTALLED_APPS:
+    from .views import PostTagbasedList
     urlpatterns += patterns('',
         url( 
             regex = r'^tag/(?P<tag>[-_\w]+)/$',
