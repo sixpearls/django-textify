@@ -143,56 +143,59 @@ class TextifyPageBase(FlatPage,RenderedContentMixin,CommentStatusMixin):
         verbose_name = _(u'Textify Page')
         verbose_name_plural = _(u'Textify Pages')
 
-if 'mptt' in site_settings.INSTALLED_APPS:
-    from mptt.models import MPTTModel, TreeForeignKey
-    class TextifyPage(MPTTModel,TextifyPageBase):
-        parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
+if 'Page' in settings.CONCRETE_MODELS:
+    if 'mptt' in site_settings.INSTALLED_APPS:
+        from mptt.models import MPTTModel, TreeForeignKey
+        class TextifyPage(MPTTModel,TextifyPageBase):
+            parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
 
-        class Meta:
-            verbose_name = _(u'Textify Page')
-            verbose_name_plural = _(u'Textify Pages')
+            class Meta:
+                verbose_name = _(u'Textify Page')
+                verbose_name_plural = _(u'Textify Pages')
 
-        def get_siblings_include_self(self):
-            return self.get_siblings(include_self=True)
-else:
-    class TextifyPage(TextifyPageBase):
-        class Meta:
-            verbose_name = _(u'Textify Page')
-            verbose_name_plural = _(u'Textify Pages')
-
-class TextifyPost(TextifyBase,RenderedContentMixin,PublishedItemMixin,CommentStatusMixin):
-    post_type = models.IntegerField(_('Post Type'),
-        choices=settings.POST_TYPES,
-        default=settings.DEFAULT_POST_TYPE)
-    if 'categories' in site_settings.INSTALLED_APPS:
-        category = models.ForeignKey('categories.Category',blank=True,null=True,on_delete=models.SET_NULL)
-    if 'taggit' in site_settings.INSTALLED_APPS:
-        tags = TaggableManager(through=TaggedTextifyPost,blank=True)
-    if 'massmedia' in site_settings.INSTALLED_APPS:
-        featured_image = models.ForeignKey('massmedia.Image',blank=True,null=True,on_delete=models.SET_NULL)
+            def get_siblings_include_self(self):
+                return self.get_siblings(include_self=True)
     else:
-        featured_image = models.ImageField()
+        class TextifyPage(TextifyPageBase):
+            class Meta:
+                verbose_name = _(u'Textify Page')
+                verbose_name_plural = _(u'Textify Pages')
 
-    class Meta(PublishedItemMixin.Meta):
-        verbose_name = _(u'Textify Post')
-        verbose_name_plural = _(u'Textify Posts')
+if 'Post' in settings.CONCRETE_MODELS:
+    class TextifyPost(TextifyBase,RenderedContentMixin,PublishedItemMixin,CommentStatusMixin):
+        post_type = models.IntegerField(_('Post Type'),
+            choices=settings.POST_TYPES,
+            default=settings.DEFAULT_POST_TYPE)
+        if 'categories' in site_settings.INSTALLED_APPS:
+            category = models.ForeignKey('categories.Category',blank=True,null=True,on_delete=models.SET_NULL)
+        if 'taggit' in site_settings.INSTALLED_APPS:
+            tags = TaggableManager(through=TaggedTextifyPost,blank=True)
+        if 'massmedia' in site_settings.INSTALLED_APPS:
+            featured_image = models.ForeignKey('massmedia.Image',blank=True,null=True,on_delete=models.SET_NULL)
+        else:
+            featured_image = models.ImageField(upload_to='featured_images/')
 
-    @models.permalink
-    def get_absolute_url(self):
-        return ('post_detail', (), {
-            'post_type': self.get_post_type_display(),
-            'year': self.published.year,
-            'month': self.published.strftime('%b').lower(),
-            'slug': self.slug
-        })
+        class Meta(PublishedItemMixin.Meta):
+            verbose_name = _(u'Textify Post')
+            verbose_name_plural = _(u'Textify Posts')
 
-class TextifyChunk(TextifyBase,RenderedContentMixin):
-    if 'taggit' in site_settings.INSTALLED_APPS:
-        tags = TaggableManager(through=TaggedTextifyChunk,blank=True)
+        @models.permalink
+        def get_absolute_url(self):
+            return ('post_detail', (), {
+                'post_type': self.get_post_type_display(),
+                'year': self.published.year,
+                'month': self.published.strftime('%b').lower(),
+                'slug': self.slug
+            })
 
-    class Meta:
-        verbose_name = _(u'Textify Chunk')
-        verbose_name_plural = _(u'Textify Chunks')
+if 'Chunk' in settings.CONCRETE_MODELS:
+    class TextifyChunk(TextifyBase,RenderedContentMixin):
+        if 'taggit' in site_settings.INSTALLED_APPS:
+            tags = TaggableManager(through=TaggedTextifyChunk,blank=True)
 
-from django import template
-template.add_to_builtins('textify.templatetags.textify_tags')
+        class Meta:
+            verbose_name = _(u'Textify Chunk')
+            verbose_name_plural = _(u'Textify Chunks')
+
+    from django import template
+    template.add_to_builtins('textify.templatetags.textify_tags')
