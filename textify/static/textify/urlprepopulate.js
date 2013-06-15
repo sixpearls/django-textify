@@ -21,8 +21,10 @@
  
                 var values = [];
                 $.each(dependencies, function(i, field) {
-                  if ($(field).val().length > 0) {
+                  if ($(field).val() !== null && $(field).val().length > 0) {
                       values.push($(field).val());
+                  } else {
+                    values.push('/');
                   }
                 })
                 if (values.length>1) {
