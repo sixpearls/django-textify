@@ -14,7 +14,7 @@ class TextifyPageForm(FlatpageForm):
             super(TextifyPageForm,self).__init__(*args,**kwargs)
 
             CHOICES_TUPLE = tuple( (url, unicode(pk)) for pk,url in self.fields["parent"].queryset.values_list('id','url') )
-            self.fields["parent__url"] = forms.ChoiceField(choices=CHOICES_TUPLE)
+            self.fields["parent__url"] = forms.ChoiceField(choices=CHOICES_TUPLE, required=False)
             # the specific translation tuple would also need to be meta-generated
 
         def __getitem__(self,name):
