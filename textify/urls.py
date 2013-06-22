@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from django.conf.urls.defaults import patterns, url, include
+from django.conf.urls import patterns, include, url
 from django.views.generic import date_based
 
 from .views import PostDetail, PostDatebasedList
