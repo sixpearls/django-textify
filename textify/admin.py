@@ -42,7 +42,7 @@ if 'Page' in settings.CONCRETE_MODELS:
                 css = { "all": ("textify/admin.css",) }
         else:
             fieldsets = (
-                (None, {'fields': ('url', 'title', 'content_raw', 'sites', 'comment_status')}),
+                (None, {'fields': ('title', 'url', 'content_raw', 'sites', 'comment_status')}),
                 (_('Advanced options'), {'classes': ('collapse',), 'fields': ('registration_required', 'template_name')}),
             )
         list_display = ('url', 'title')

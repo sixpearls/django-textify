@@ -89,6 +89,24 @@ def render_content(text,self=None):
     else:
         c = template.Context({'self': self })
 
+    extra_context = {}
+    for key in settings.RENDER_EXTRA_CONTEXT:
+        try:
+            extra_context[key] = load_component(settings.RENDER_EXTRA_CONTEXT[key])
+        except:
+            extra_context[key] = settings.RENDER_EXTRA_CONTEXT[key]
+
+        if issubclass(extra_context[key],models.Model):
+            try:
+                extra_context[key] = extra_context[key].objects.all()
+            except:
+                pass
+
+    c.update(extra_context)
+
+    print "CONTEXT"
+    print c
+
     text = t.render(c)
 
     for renderer, kwargs in settings.RENDERERS:
