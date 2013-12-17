@@ -206,6 +206,9 @@ if 'Post' in settings.CONCRETE_MODELS:
                 'slug': self.slug
             })
 
+    from django import template
+    template.add_to_builtins('textify.templatetags.textify_post_tags')
+
 if 'Chunk' in settings.CONCRETE_MODELS:
     class TextifyChunk(TextifyBase,RenderedContentMixin):
         if 'taggit' in site_settings.INSTALLED_APPS:
@@ -216,4 +219,4 @@ if 'Chunk' in settings.CONCRETE_MODELS:
             verbose_name_plural = _(u'Textify Chunks')
 
     from django import template
-    template.add_to_builtins('textify.templatetags.textify_tags')
+    template.add_to_builtins('textify.templatetags.textify_chunk_tags')
