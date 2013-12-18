@@ -40,7 +40,9 @@ def do_get_post(parser, token):
     tokens = token.split_contents()
     if len(tokens)%2 != 1 or tokens[-2] != 'as':
         raise template.TemplateSyntaxError, 'Invalid syntax. Usage: {%% %s kw1 arg1 [kw2 arg2 [kw3 arg3 [...]] as varname %%}' % tokens[0]
-    kwargs = {tokens[i]: tokens[i+1] for i in range(1,len(tokens)-2, 2) }
+    kwargs = {}
+    for i in range(1,len(tokens)-2, 2):
+        kwargs[tokens[i]] = tokens[i+1]
 
     tagname, varname = tokens[0], tokens[-1]
     return GetPostNode(varname, kwargs)
