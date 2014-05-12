@@ -103,10 +103,6 @@ def render_content(text,self=None):
                 pass
 
     c.update(extra_context)
-
-    print "CONTEXT"
-    print c
-
     text = t.render(c)
 
     for renderer, kwargs in settings.RENDERERS:
